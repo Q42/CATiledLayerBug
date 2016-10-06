@@ -4,6 +4,8 @@ _This repository demonstrates a bug in `CATiledLayer`. Under certain conditions,
 
 [`rdar://28648050`](http://www.openradar.me/28648050)
 
+[StackOverflow question](http://stackoverflow.com/questions/39891468/catiledlayer-shows-previous-tiles)
+
 ## Details
 
 When invalidating a view backed by a CATiledLayer, a previous tile remains "stuck" and isn't correctly invalidated.
