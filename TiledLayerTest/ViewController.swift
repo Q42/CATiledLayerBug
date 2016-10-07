@@ -51,8 +51,12 @@ class ViewController: UIViewController, UIScrollViewDelegate {
 
     DispatchQueue.main.asyncAfter(deadline: .now() + interval) {
 
+      print("BEFORE setNeedsDisplay")
+
       self.tiledView.tileColor = .lightGray
       self.tiledView.setNeedsDisplay()
+
+      print("AFTER  setNeedsDisplay")
     }
   }
 

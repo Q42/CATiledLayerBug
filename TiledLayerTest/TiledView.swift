@@ -39,85 +39,48 @@ class TiledView : UIView {
   }
 
   override func draw(_ rect: CGRect) {
-    drawTiles(inRect: rect)
-  }
+    guard let context = UIGraphicsGetCurrentContext() else { return }
 
-  private func drawTile(
-    in context: CGContext,
-    row: Int,
-    col: Int,
-    scale: CGFloat,
-    tileRect: CGRect)
-  {
+    let info = DebugInfo(context: context, rect: rect, tileSize: tiledLayer.tileSize)
+    print("BEGIN drawTile \(info.row),\(info.col) - \(tileColor)")
+
     tileColor.set()
-    context.fill(tileRect)
+    context.fill(rect)
+    drawDebugString(context: context, rect: rect, info: info)
 
     // Sleep to simulate "expensive" work on this render thread
-    Thread.sleep(forTimeInterval: 0.01)
+    Thread.sleep(forTimeInterval: 0.1)
 
-    print("drawTile \(row),\(col) - \(tileColor)")
+    print("END   drawTile \(info.row),\(info.col) - \(tileColor)")
   }
 
-  private func debugBorder(
-    in context: CGContext,
-    row: Int,
-    col: Int,
-    scale: CGFloat,
-    tileRect: CGRect)
-  {
-    // Border
-    UIColor.green.set()
-    context.setLineWidth(6.0 / scale)
-    context.stroke(tileRect)
 
-    // Info
-    let level = 1 / scale
+  private func drawDebugString(context: CGContext, rect: CGRect, info: DebugInfo) {
+    let level = 1 / info.scale
     let attributes: [String: AnyObject] = [
       NSForegroundColorAttributeName: UIColor.white,
       NSFontAttributeName: UIFont.systemFont(ofSize: level * 25)
     ]
 
-    NSAttributedString(string: "\(row),\(col) / \(scale)", attributes: attributes)
-      .draw(in: tileRect.insetBy(dx: level * 10, dy: level * 10))
+    NSAttributedString(string: "\(info.row),\(info.col) / \(info.scale)", attributes: attributes)
+      .draw(in: rect.insetBy(dx: level * 10, dy: level * 10))
   }
+}
 
-  private func drawTiles(inRect rect: CGRect) {
-    guard let context = UIGraphicsGetCurrentContext() else { return }
+private struct DebugInfo {
+  let col: Int
+  let row: Int
+  let scale: CGFloat
 
-
-    // Note that at certain zoom levels a != -d
-    // Therefor we must use both scales, otherwise we get black lines between tiles
+  init(context: CGContext, rect: CGRect, tileSize: CGSize) {
     let scaleX = context.ctm.a
     let scaleY = -context.ctm.d
 
-    var tileSize = tiledLayer.tileSize
+    let width = tileSize.width / scaleX
+    let height = tileSize.height / scaleY
 
-    tileSize.width /= scaleX
-    tileSize.height /= scaleY
-
-    // calculate the rows and columns of tiles that intersect the rect we have been asked to draw
-    let firstCol = Int(rect.minX / tileSize.width)
-    let lastCol = Int(rect.maxX / tileSize.width)
-    let firstRow = Int(rect.minY / tileSize.height)
-    let lastRow = Int(rect.maxY / tileSize.height)
-
-    for row in firstRow...lastRow {
-      for col in firstCol...lastCol {
-        var tileRect = CGRect(
-          x: tileSize.width * CGFloat(col),
-          y: tileSize.height * CGFloat(row),
-          width: tileSize.width,
-          height: tileSize.height)
-
-        // if the tile would stick outside of our bounds, we need to truncate it so as
-        // to avoid stretching out the partial tiles at the right and bottom edges
-        tileRect = self.bounds.intersection(tileRect)
-
-        drawTile(in: context, row: row, col: col, scale: scaleY, tileRect: tileRect)
-
-        // Add border and info for debugging
-        debugBorder(in: context, row: row, col: col, scale: scaleY, tileRect: tileRect)
-      }
-    }
+    col = Int(rect.minX / width)
+    row = Int(rect.minY / height)
+    scale = scaleX
   }
 }
