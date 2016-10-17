@@ -53,6 +53,9 @@ class ViewController: UIViewController, UIScrollViewDelegate {
 
       print("BEFORE setNeedsDisplay")
 
+      // Change the updateID to reflect a new "data source" (tileColor in this case)
+      self.tiledView.updateID = NSUUID()
+
       self.tiledView.tileColor = .lightGray
       self.tiledView.setNeedsDisplay()
 

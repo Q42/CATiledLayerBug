@@ -25,6 +25,9 @@ class TiledView : UIView {
     }
   }
 
+  // Random update id, should be changed whenever data source is updated
+  var updateID = NSUUID()
+
   var tileColor = UIColor.red
 
   init() {
@@ -39,6 +42,7 @@ class TiledView : UIView {
   }
 
   override func draw(_ rect: CGRect) {
+    let originalID = updateID
     guard let context = UIGraphicsGetCurrentContext() else { return }
 
     let info = DebugInfo(context: context, rect: rect, tileSize: tiledLayer.tileSize)
@@ -52,6 +56,17 @@ class TiledView : UIView {
     Thread.sleep(forTimeInterval: 0.1)
 
     print("END   drawTile \(info.row),\(info.col) - \(tileColor)")
+
+    // During execution of this draw method, another thread changed the updateID
+    // That means whatever we just drew is out of date, we should schedule a new draw call
+    if originalID != updateID {
+      print("<!> updateID changed while \(info.row),\(info.col) was rendering.")
+
+      // dispatch a redraw request, but wait a little while first
+      DispatchQueue.main.asyncAfter(deadline: .now() + DispatchTimeInterval.milliseconds(17)) {
+        self.layer.setNeedsDisplayIn(rect)
+      }
+    }
   }
 
 
