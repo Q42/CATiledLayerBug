@@ -42,7 +42,7 @@ class TiledView : UIView {
   }
 
   override func draw(_ rect: CGRect) {
-    let originalID = updateID
+//    let originalID = updateID
     guard let context = UIGraphicsGetCurrentContext() else { return }
 
     let info = DebugInfo(context: context, rect: rect, tileSize: tiledLayer.tileSize)
@@ -59,22 +59,22 @@ class TiledView : UIView {
 
     // During execution of this draw method, another thread changed the updateID
     // That means whatever we just drew is out of date, we should schedule a new draw call
-    if originalID != updateID {
-      print("<!> updateID changed while \(info.row),\(info.col) was rendering.")
-
-      // dispatch a redraw request, but wait a little while first
-      DispatchQueue.main.asyncAfter(deadline: .now() + DispatchTimeInterval.milliseconds(17)) {
-        self.layer.setNeedsDisplayIn(rect)
-      }
-    }
+//    if originalID != updateID {
+//      print("<!> updateID changed while \(info.row),\(info.col) was rendering.")
+//
+//      // dispatch a redraw request, but wait a little while first
+//      DispatchQueue.main.asyncAfter(deadline: .now() + DispatchTimeInterval.milliseconds(17)) {
+//        self.layer.setNeedsDisplay(rect)
+//      }
+//    }
   }
 
 
   private func drawDebugString(context: CGContext, rect: CGRect, info: DebugInfo) {
     let level = 1 / info.scale
-    let attributes: [String: AnyObject] = [
-      NSForegroundColorAttributeName: UIColor.white,
-      NSFontAttributeName: UIFont.systemFont(ofSize: level * 25)
+    let attributes: [NSAttributedString.Key: AnyObject] = [
+      NSAttributedString.Key.foregroundColor: UIColor.white,
+      NSAttributedString.Key.font: UIFont.systemFont(ofSize: level * 25)
     ]
 
     NSAttributedString(string: "\(info.row),\(info.col) / \(info.scale)", attributes: attributes)
